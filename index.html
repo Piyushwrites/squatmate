@@ -333,15 +333,15 @@
         }
         .toast.show { transform: translateY(0); }
 
-        /* --- SCIENCE INSIGHTS MODAL --- */
-        .science-modal {
+        /* --- INFO MODALS COMMON (WHY & HOW) --- */
+        .info-modal {
             max-width: 580px;
             width: 95%;
             text-align: left;
-            padding: 2.5rem;
+            padding: 2.2rem;
         }
 
-        .science-modal h2 {
+        .info-modal h2 {
             font-size: 1.5rem;
             background: linear-gradient(to right, #ffffff, #10b981);
             -webkit-background-clip: text;
@@ -352,21 +352,21 @@
             gap: 0.5rem;
         }
 
-        .science-grid {
+        .info-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.25rem;
-            margin-bottom: 1.75rem;
+            gap: 1.1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .science-section {
+        .info-section {
             background: rgba(0, 0, 0, 0.2);
             padding: 1rem 1.25rem;
             border-radius: 12px;
             border: 1px solid var(--card-border);
         }
 
-        .science-section h3 {
+        .info-section h3 {
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -377,20 +377,21 @@
         }
 
         .section-downside h3 { color: #f87171; }
-        .section-upside h3 { color: #34d399; }
+        .section-upside h3, .section-guide h3 { color: #34d399; }
+        .section-neutral h3 { color: #3b82f6; }
 
-        .science-section p {
+        .info-section p {
             font-size: 0.88rem;
             color: #94a3b8;
             line-height: 1.5;
         }
 
-        .science-section ul {
+        .info-section ul {
             list-style: none;
             margin-top: 0.4rem;
         }
 
-        .science-section li {
+        .info-section li {
             font-size: 0.85rem;
             color: #cbd5e1;
             margin-bottom: 0.35rem;
@@ -398,16 +399,16 @@
             position: relative;
         }
 
-        .science-section li::before {
+        .info-section li::before {
             content: '•';
             position: absolute;
             left: 0;
             color: var(--text-muted);
         }
 
-        .section-upside li::before { color: var(--primary); }
+        .section-upside li::before, .section-guide li::before { color: var(--primary); }
 
-        .science-footer-note {
+        .info-footer-note {
             font-size: 0.8rem;
             color: var(--text-muted);
             border-top: 1px solid var(--card-border);
@@ -415,17 +416,54 @@
             line-height: 1.4;
         }
 
-        /* --- DUAL BOUNDARY CORNER FOOTERS --- */
+        /* --- HOW-TO SQUAT SPECIFIC STYLES --- */
+        .squat-sketch-box {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #0b0f19;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            border: 1px dashed var(--card-border);
+        }
+
+        .sketch-container {
+            text-align: center;
+            width: 45%;
+        }
+
+        .sketch-container svg {
+            width: 75px;
+            height: 110px;
+        }
+
+        .sketch-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* --- SPLIT ACTIONABLE FOOTER LAYOUT --- */
         .footer-container {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
             width: 100%;
             margin-top: auto;
             padding-top: 2rem;
         }
 
-        .creative-footer, .science-trigger-btn {
+        .footer-actions-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.6rem;
+        }
+
+        .creative-footer, .info-trigger-btn {
             display: inline-flex;
             align-items: center;
             font-size: 0.75rem;
@@ -440,7 +478,7 @@
             transition: var(--transition);
         }
 
-        .creative-footer { cursor: default; }
+        .creative-footer { cursor: default; padding-bottom: 0.2rem;}
 
         .creative-footer::before {
             content: '↳';
@@ -450,7 +488,7 @@
             transition: var(--transition);
         }
 
-        .science-trigger-btn::after {
+        .info-trigger-btn::after {
             content: '◿';
             margin-left: 0.5rem;
             color: var(--primary);
@@ -476,15 +514,15 @@
             50% { opacity: 1; }
         }
 
-        /* Interactive Footers Animation Toggles */
+        /* Interactive Footers Hover Triggers */
         .creative-footer:hover .author-name {
             color: var(--primary);
             text-shadow: 0 0 8px var(--primary-glow);
         }
         .creative-footer:hover::before { transform: translateX(3px); }
 
-        .science-trigger-btn:hover { color: #f8fafc; }
-        .science-trigger-btn:hover::after { transform: translate(2px, 2px); filter: drop-shadow(0 0 5px var(--primary)); }
+        .info-trigger-btn:hover { color: #f8fafc; }
+        .info-trigger-btn:hover::after { transform: translate(2px, 2px); filter: drop-shadow(0 0 5px var(--primary)); }
     </style>
 </head>
 <body>
@@ -520,12 +558,15 @@
         </div>
     </main>
 
-    <!-- Balanced Left/Right Split Footer Navigation Structure -->
+    <!-- Balanced Left Side Branding / Right Side Strategic Utility Footers -->
     <div class="footer-container">
         <div class="creative-footer">
             A side project by <span class="author-name">Piyush Sahoo</span>
         </div>
-        <button id="whySquatmateBtn" class="science-trigger-btn">Why Squatmate?</button>
+        <div class="footer-actions-right">
+            <button id="howSquatBtn" class="info-trigger-btn">How to do Squats?</button>
+            <button id="whySquatmateBtn" class="info-trigger-btn">Why Squatmate?</button>
+        </div>
     </div>
 
     <!-- Active Movement Prompt Modal -->
@@ -538,13 +579,13 @@
         </div>
     </div>
 
-    <!-- Dynamic Scientific Knowledge Base Modal Overlay -->
+    <!-- WHY SQUATMATE MODAL OVERLAY -->
     <div id="scienceOverlay" class="modal-overlay" aria-modal="true" role="dialog">
-        <div class="modal science-modal">
+        <div class="modal info-modal">
             <h2>🔬 The Biology of Sitting vs. Squatting</h2>
             
-            <div class="science-grid">
-                <div class="science-section section-downside">
+            <div class="info-grid">
+                <div class="info-section section-downside">
                     <h3>⚠️ The Cost of 1+ Hour Continuous Sitting</h3>
                     <p>Remaining stationary for over 60 minutes deactivates major skeletal muscle groups, causing metabolic shutdown:</p>
                     <ul>
@@ -554,7 +595,7 @@
                     </ul>
                 </div>
 
-                <div class="science-section section-upside">
+                <div class="info-section section-upside">
                     <h3>⚡ The 60-Second Squat Reset Protocol</h3>
                     <p>Executing explosive deep compound movements triggers deep biometric health defense pathways instantly:</p>
                     <ul>
@@ -565,9 +606,77 @@
                 </div>
             </div>
 
-            <div class="science-footer-note">
+            <div class="info-footer-note">
                 <strong>Squatmate</strong> is a lightweight open application engineered by <strong>Piyush Sahoo</strong> as a pro-health initiative. By interrupting stasis blocks every hour, you alter your system's biological trajectory.
                 <button id="closeScienceBtn" class="btn-secondary" style="margin-top: 1rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOW TO SQUAT MODAL OVERLAY (WITH EMBEDDED OFFLINE VECTOR SKETCHES) -->
+    <div id="howSquatOverlay" class="modal-overlay" aria-modal="true" role="dialog">
+        <div class="modal info-modal">
+            <h2>📐 Perfectly Formed Bodyweight Squats</h2>
+            
+            <!-- Offline Vector Sketch Board Container -->
+            <div class="squat-sketch-box">
+                <div class="sketch-container">
+                    <!-- Phase 1 Vector Art Graphic Setup -->
+                    <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Floor Line -->
+                        <line x1="10" y1="130" x2="90" y2="130" stroke="#1e2943" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Head -->
+                        <circle cx="50" cy="25" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
+                        <!-- Spine / Torso -->
+                        <line x1="50" y1="33" x2="50" y2="80" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Arms extended balance -->
+                        <line x1="50" y1="45" x2="82" y2="45" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Legs / Hips Base Stand -->
+                        <line x1="50" y1="80" x2="38" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+                        <line x1="50" y1="80" x2="62" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <div class="sketch-label">1. Setup Profile</div>
+                </div>
+
+                <div class="sketch-container">
+                    <!-- Phase 2 Vector Art Graphic Execution -->
+                    <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="130" x2="90" y2="130" stroke="#1e2943" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Head shifting back slightly -->
+                        <circle cx="35" cy="55" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
+                        <!-- Inclined flat spine -->
+                        <line x1="35" y1="63" x2="48" y2="95" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Arms straight out forward -->
+                        <line x1="35" y1="70" x2="70" y2="70" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Thigh dropped parallel to floor line -->
+                        <line x1="48" y1="95" x2="78" y2="95" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Shin stable balance vertical axis -->
+                        <line x1="78" y1="95" x2="72" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <div class="sketch-label">2. Deep Execution</div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-section section-guide">
+                    <h3>🎯 Precision Execution Mechanics</h3>
+                    <ul>
+                        <li><strong>The Stance:</strong> Plant feet shoulder-width apart, toes flared slightly out (15°).</li>
+                        <li><strong>The Descent:</strong> Break at your hips first, pushing your glutes backward like dropping cleanly into an invisible chair.</li>
+                        <li><strong>The Depth:</strong> Lower down smoothly until thighs track parallel to the ground layout line. Keep knees pushed out over your toes.</li>
+                        <li><strong>Drive Phase:</strong> Drive forcefully up directly through your mid-foot engine while maintaining an upright chest profile.</li>
+                    </ul>
+                </div>
+
+                <div class="info-section section-neutral">
+                    <h3>🔒 Joint Protection & Safety Rules</h3>
+                    <p><strong>Heels Flat:</strong> Never let your heels lift off the floor. If they do, reduce descent depth slightly. <br><strong>Spine Lock:</strong> Maintain a flat, neutral back posture; avoid rounding or hunching your shoulders forward.</p>
+                </div>
+            </div>
+
+            <div class="info-footer-note">
+                Form dictates biomechanical reward. Rapid, unchecked reps increase mechanical strain. Focus on slow, intentional, deep movements.
+                <button id="closeHowSquatBtn" class="btn-secondary" style="margin-top: 1rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
             </div>
         </div>
     </div>
@@ -588,7 +697,7 @@
                 
                 navigator.serviceWorker.register(swURL, { scope: './' })
                     .then(() => console.log('PWA Service Engine Ready.'))
-                    .catch(err => console.warn('PWA Offline context unavailable over raw file protocol. Use local server hosting for complete installation features.'));
+                    .catch(err => console.warn('PWA Offline mode ready.'));
             });
         }
 
@@ -611,15 +720,24 @@
         const toast = document.getElementById('toast');
         const installPwaBtn = document.getElementById('installPwaBtn');
         
-        // Scientific Module Interactive Selectors
+        // Interactive Overlay Elements Map
         const whySquatmateBtn = document.getElementById('whySquatmateBtn');
         const scienceOverlay = document.getElementById('scienceOverlay');
         const closeScienceBtn = document.getElementById('closeScienceBtn');
+        
+        const howSquatBtn = document.getElementById('howSquatBtn');
+        const howSquatOverlay = document.getElementById('howSquatOverlay');
+        const closeHowSquatBtn = document.getElementById('closeHowSquatBtn');
 
-        // Toggle Science Modal Context Tabs
+        // Scientific Analysis Information Tab Controllers
         whySquatmateBtn.addEventListener('click', () => scienceOverlay.classList.add('active'));
         closeScienceBtn.addEventListener('click', () => scienceOverlay.classList.remove('active'));
         scienceOverlay.addEventListener('click', (e) => { if (e.target === scienceOverlay) scienceOverlay.classList.remove('active'); });
+
+        // Biomechanical Form Guide Tab Controllers
+        howSquatBtn.addEventListener('click', () => howSquatOverlay.classList.add('active'));
+        closeHowSquatBtn.addEventListener('click', () => howSquatOverlay.classList.remove('active'));
+        howSquatOverlay.addEventListener('click', (e) => { if (e.target === howSquatOverlay) howSquatOverlay.classList.remove('active'); });
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
