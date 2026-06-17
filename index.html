@@ -5,32 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Squatmate - Focus & Movement Timer</title>
     
-    <script>
-        const manifest = {
-            "short_name": "Squatmate",
-            "name": "Squatmate - Focus & Movement Timer",
-            "icons": [
-                {
-                    "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏋️‍♂️</text></svg>",
-                    "sizes": "512x512",
-                    "type": "image/svg+xml",
-                    "purpose": "any maskable"
-                }
-            ],
-            "start_url": ".",
-            "background_color": "#0b0f19",
-            "theme_color": "#10b981",
-            "display": "standalone",
-            "orientation": "portrait"
-        };
-        const stringManifest = JSON.stringify(manifest);
-        const blob = new Blob([stringManifest], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = manifestURL;
-        document.head.appendChild(link);
-    </script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
 
     <style>
         /* --- PREMIUM NORDIC DARK THEME --- */
@@ -235,7 +211,7 @@
         .btn-install {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            display: inline-flex; /* Hard-forced layout safety block mapping */
+            display: none; /* Shows dynamically when browser approves environment */
         }
         .btn-install:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
 
@@ -243,7 +219,7 @@
             grid-column: span 2;
         }
 
-        /* --- FIX: SECURE RESPONSIVE MODAL OVERLAYS ENGINE --- */
+        /* --- FIX: RESPONSIVE INTERNAL MODAL SCROLLBARS --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -259,7 +235,7 @@
             opacity: 0;
             pointer-events: none;
             transition: var(--transition);
-            padding: 1rem; /* Prevents overflow clipping on mobile viewports */
+            padding: 1rem; 
         }
 
         .modal-overlay.active {
@@ -278,8 +254,6 @@
             box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
             transform: scale(0.95);
             transition: var(--transition);
-            
-            /* Anti-overflow boundaries layout */
             max-height: calc(100vh - 2rem);
             display: flex;
             flex-direction: column;
@@ -289,7 +263,6 @@
             transform: scale(1);
         }
 
-        /* --- FIX: INFO MODAL SPECIFIC CAPACITY EXPANSIONS --- */
         .info-modal {
             max-width: 520px;
         }
@@ -303,18 +276,15 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            flex-shrink: 0; /* Keeps header frozen at top boundary */
+            flex-shrink: 0; 
         }
 
-        /* Internal viewport layout wrapping containing frame updates */
         .modal-scroll-body {
             overflow-y: auto;
             flex: 1;
             padding-right: 0.5rem;
             text-align: left;
             margin-bottom: 1rem;
-            
-            /* Custom styled fluid scroll trackbar UI */
             scrollbar-width: thin;
             scrollbar-color: var(--card-border) transparent;
         }
@@ -389,10 +359,10 @@
             border-top: 1px solid var(--card-border);
             padding-top: 0.85rem;
             line-height: 1.4;
-            flex-shrink: 0; /* Locks clean navigation back controls */
+            flex-shrink: 0; 
         }
 
-        /* --- SQUAT BLUEPRINT VISUAL VECTORS --- */
+        /* --- BLUEPRINT VECTORS --- */
         .squat-sketch-box {
             display: flex;
             justify-content: space-around;
@@ -422,7 +392,7 @@
             text-transform: uppercase;
         }
 
-        /* --- RESPONSIBILITY FIX: FOOTER MANAGEMENT GRID --- */
+        /* --- FOOTER LAYOUT GRID --- */
         .footer-container {
             display: flex;
             justify-content: space-between;
@@ -492,7 +462,6 @@
         .creative-footer:hover .author-name { color: var(--primary); text-shadow: 0 0 8px var(--primary-glow); }
         .info-trigger-btn:hover { color: #f8fafc; }
 
-        /* Mobile specific style overwrites adjustments */
         @media(max-width: 480px) {
             .footer-container {
                 flex-direction: column-reverse;
@@ -533,7 +502,7 @@
                 <button id="startPauseBtn" class="btn-primary btn-full">Start Session</button>
                 <button id="resetBtn" class="btn-secondary">Reset</button>
                 <button id="testNotifyBtn" class="btn-secondary">Test Alert</button>
-                <button id="installPwaBtn" class="btn-install btn-full">⬇ Download Squatmate App</button>
+                <button id="installPwaBtn" class="btn-install btn-full">⬇ Install App to Desktop</button>
             </div>
         </div>
     </main>
@@ -550,7 +519,7 @@
 
     <div id="modalOverlay" class="modal-overlay">
         <div class="modal">
-            <div class="modal-icon">🌱</div>
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌱</div>
             <h2>Time for Squats</h2>
             <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">Your continuous sit interval limit is reached. Step back, protect your posture, and execute 15 complete bodyweight squats.</p>
             <button id="completeSquatsBtn" class="btn-success">Completed, Let's Reset</button>
@@ -646,16 +615,12 @@
     </div>
 
     <script>
-        // Service worker setup block
+        // --- SECURE REAL SERVICE WORKER REGISTRATION FROM FILE ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const swCode = `
-                    self.addEventListener('install', (e) => self.skipWaiting());
-                    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-                    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => new Response('Offline.'))));
-                `;
-                const blob = new Blob([swCode], { type: 'text/javascript' });
-                navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: './' }).catch(() => {});
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('PWA Service Engine Active.'))
+                    .catch(err => console.error('PWA Engine error:', err));
             });
         }
 
@@ -682,49 +647,37 @@
         const howSquatOverlay = document.getElementById('howSquatOverlay');
         const closeHowSquatBtn = document.getElementById('closeHowSquatBtn');
 
-        // Modal Action Toggles Setup
         whySquatmateBtn.addEventListener('click', () => scienceOverlay.classList.add('active'));
         closeScienceBtn.addEventListener('click', () => scienceOverlay.classList.remove('active'));
         howSquatBtn.addEventListener('click', () => howSquatOverlay.classList.add('active'));
         closeHowSquatBtn.addEventListener('click', () => howSquatOverlay.classList.remove('active'));
 
-        // Close when clicking outside content box boundary area
         window.addEventListener('click', (e) => {
             if(e.target === scienceOverlay) scienceOverlay.classList.remove('active');
             if(e.target === howSquatOverlay) howSquatOverlay.classList.remove('active');
             if(e.target === modalOverlay) modalOverlay.classList.remove('active');
         });
 
-        // --- FIX: INTEGRATED NATIVE HYBRID DOWNLOAD AND PWA FALLBACK PIPELINE ENGINE ---
+        // --- NATIVE PWA INTERCEPT ENGINE LISTENER ---
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installPwaBtn.textContent = "⬇ Install Squatmate App";
+            installPwaBtn.style.display = 'inline-flex'; // Reveals install button natively on GitHub pages
         });
 
         installPwaBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                // If native PWA browser installation environment criteria matches perfectly
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') deferredPrompt = null;
-            } else {
-                // FALLBACK: Auto-bundle the source file and deliver an offline executable directly to user's local disk
-                try {
-                    const pageSource = document.documentElement.outerHTML;
-                    const downloadBlob = new Blob([pageSource], { type: 'text/html' });
-                    const downloadUrl = URL.createObjectURL(downloadBlob);
-                    const tempAnchor = document.createElement('a');
-                    tempAnchor.href = downloadUrl;
-                    tempAnchor.download = 'Squatmate_App.html';
-                    document.body.appendChild(tempAnchor);
-                    tempAnchor.click();
-                    document.body.removeChild(tempAnchor);
-                    URL.revokeObjectURL(downloadUrl);
-                } catch(err) {
-                    console.error("Direct file backup deployment array failed: ", err);
-                }
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installPwaBtn.style.display = 'none';
+                deferredPrompt = null;
             }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installPwaBtn.style.display = 'none';
+            deferredPrompt = null;
         });
 
         function playPremiumHarmonicChime() {
@@ -750,7 +703,6 @@
             const minutes = Math.floor(totalSecondsLeft / 60);
             const seconds = totalSecondsLeft % 60;
             timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            if(timerState === 'running') document.title = `(${String(minutes).padStart(2, '0')}m) Squatmate`;
         }
 
         function setTimerStatusStyle(state) {
@@ -774,7 +726,6 @@
                 statusText.textContent = 'Stopped';
                 startPauseBtn.textContent = 'Start Session';
                 startPauseBtn.className = 'btn-primary btn-full';
-                document.title = "Squatmate - Focus & Movement Timer";
             }
         }
 
@@ -792,9 +743,6 @@
                 setTimerStatusStyle('stopped');
                 playPremiumHarmonicChime();
                 modalOverlay.classList.add('active');
-                if ("Notification" in window && Notification.permission === "granted") {
-                    new Notification("Squatmate Reminder", { body: "Stand up for 15 quick squats!" });
-                }
                 return;
             }
             totalSecondsLeft--;
@@ -802,7 +750,6 @@
         }
 
         startPauseBtn.addEventListener('click', () => {
-            if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
             if (timerState === 'stopped' || timerState === 'paused') {
                 if (timerState === 'stopped') syncDurationFromInput();
                 setTimerStatusStyle('running');
