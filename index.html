@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squatmate - Focus & Movement Timer</title>
+    
+    <!-- PWA Manifest Dynamic Injection -->
+    <script>
+        const manifest = {
+            "short_name": "Squatmate",
+            "name": "Squatmate - Focus & Movement Timer",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏋️‍♂️</text></svg>",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }
+            ],
+            "start_url": ".",
+            "background_color": "#0b0f19",
+            "theme_color": "#10b981",
+            "display": "standalone",
+            "orientation": "portrait"
+        };
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+    </script>
+
+    <style>
+        /* --- PREMIUM NORDIC DARK THEME --- */
+        :root {
+            --bg: #0b0f19;
+            --card-bg: #131a2c;
+            --card-border: #1e2943;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            
+            /* Accents */
+            --primary: #10b981; 
+            --primary-glow: rgba(16, 185, 129, 0.15);
+            --primary-hover: #059669;
+            --accent-blue: #3b82f6;
+            --danger: #ef4444;
+            
+            --radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- BASE STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* --- SQUATMATE CARD --- */
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 440px;
+            padding: 3rem 2.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+        }
+
+        /* --- STATUS BADGE --- */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 1.2rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 2rem;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .status-stopped { background: #1e293b; color: #94a3b8; border-color: #334155; }
+        .status-running { background: rgba(16, 185, 129, 0.1); color: var(--primary); border-color: rgba(16, 185, 129, 0.2); }
+        .status-paused { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .status-running .status-dot {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.4; }
+            50% { transform: scale(1.4); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.4; }
+        }
+
+        /* --- TIMERS DISPLAY --- */
+        .timer-display {
+            font-size: 5.5rem;
+            font-weight: 300; 
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            margin-bottom: 2rem;
+            line-height: 1;
+        }
+
+        /* --- INPUT FIELD SETTINGS --- */
+        .settings-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 2.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+        }
+
+        .settings-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .settings-group input {
+            width: 55px;
+            background: #0b0f19;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.4rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        .settings-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        /* --- CONTROL ACTIONS BUTTONS --- */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.85rem;
+        }
+
+        button {
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.95rem 1.2rem;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { 
+            background: var(--primary); 
+            color: #0b0f19; 
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+        .btn-primary:hover:not(:disabled) { 
+            background: var(--primary-hover); 
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary { background: #1e293b; color: #f8fafc; border-color: #334155; }
+        .btn-secondary:hover:not(:disabled) { background: #2d3748; }
+
+        .btn-install {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            display: none; 
+        }
+        .btn-install:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+
+        .btn-full {
+            grid-column: span 2;
+        }
+
+        /* --- LIGHTWEIGHT POPUP MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 16, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 3rem 2.5rem;
+            border-radius: var(--radius);
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
+            transform: scale(0.95);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 15px var(--primary-glow));
+        }
+
+        .modal h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .modal p {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .btn-success { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #0b0f19; 
+            width: 100%;
+            font-size: 1.05rem;
+            padding: 1.1rem;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4); }
+
+        /* --- NOTIFICATION TOAST --- */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1e1b4b;
+            border: 1px solid #3730a3;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(200%);
+            transition: var(--transition);
+            z-index: 2000;
+            font-size: 0.9rem;
+            color: #c7d2fe;
+        }
+        .toast.show { transform: translateY(0); }
+
+        /* --- SCIENCE INSIGHTS MODAL --- */
+        .science-modal {
+            max-width: 580px;
+            width: 95%;
+            text-align: left;
+            padding: 2.5rem;
+        }
+
+        .science-modal h2 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #ffffff, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .science-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .science-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .science-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .section-downside h3 { color: #f87171; }
+        .section-upside h3 { color: #34d399; }
+
+        .science-section p {
+            font-size: 0.88rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .science-section ul {
+            list-style: none;
+            margin-top: 0.4rem;
+        }
+
+        .science-section li {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 0.35rem;
+            padding-left: 0.75rem;
+            position: relative;
+        }
+
+        .science-section li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        .section-upside li::before { color: var(--primary); }
+
+        .science-footer-note {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            padding-top: 1rem;
+            line-height: 1.4;
+        }
+
+        /* --- DUAL BOUNDARY CORNER FOOTERS --- */
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: auto;
+            padding-top: 2rem;
+        }
+
+        .creative-footer, .science-trigger-btn {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            font-weight: 500;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .creative-footer { cursor: default; }
+
+        .creative-footer::before {
+            content: '↳';
+            margin-right: 0.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .science-trigger-btn::after {
+            content: '◿';
+            margin-left: 0.5rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        .author-name {
+            color: #94a3b8;
+            margin-left: 0.35rem;
+            font-weight: 600;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .author-name::after {
+            content: '_';
+            color: var(--primary);
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Interactive Footers Animation Toggles */
+        .creative-footer:hover .author-name {
+            color: var(--primary);
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+        .creative-footer:hover::before { transform: translateX(3px); }
+
+        .science-trigger-btn:hover { color: #f8fafc; }
+        .science-trigger-btn:hover::after { transform: translate(2px, 2px); filter: drop-shadow(0 0 5px var(--primary)); }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast" role="alert">
+        🔮 Note: Notification popups blocked. App sound and visual modal active!
+    </div>
+
+    <main>
+        <div class="card">
+            <h1>Squatmate</h1>
+            <p class="subtitle">An elegant desk breaks engine.</p>
+
+            <div id="statusBadge" class="status-badge status-stopped">
+                <span class="status-dot"></span>
+                <span id="statusText">Stopped</span>
+            </div>
+
+            <div id="timerDisplay" class="timer-display" aria-live="polite">60:00</div>
+
+            <div class="settings-group">
+                <label id="intervalLabel" for="intervalInput">Sit Time Target:</label>
+                <input type="number" id="intervalInput" value="60" min="1" max="1440" aria-labelledby="intervalLabel">
+                <span>mins</span>
+            </div>
+
+            <div class="controls">
+                <button id="startPauseBtn" class="btn-primary btn-full">Start Session</button>
+                <button id="resetBtn" class="btn-secondary">Reset</button>
+                <button id="testNotifyBtn" class="btn-secondary">Test Alert</button>
+                <button id="installPwaBtn" class="btn-install btn-full">⬇ Install Squatmate Desktop App</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Balanced Left/Right Split Footer Navigation Structure -->
+    <div class="footer-container">
+        <div class="creative-footer">
+            A side project by <span class="author-name">Piyush Sahoo</span>
+        </div>
+        <button id="whySquatmateBtn" class="science-trigger-btn">Why Squatmate?</button>
+    </div>
+
+    <!-- Active Movement Prompt Modal -->
+    <div id="modalOverlay" class="modal-overlay" aria-modal="true" role="dialog">
+        <div class="modal">
+            <div class="modal-icon">🌱</div>
+            <h2>Time for Squats</h2>
+            <p>Your continuous sit interval limit is reached. Step back, protect your posture, and execute 15 complete bodyweight squats.</p>
+            <button id="completeSquatsBtn" class="btn-success">Completed, Let's Reset</button>
+        </div>
+    </div>
+
+    <!-- Dynamic Scientific Knowledge Base Modal Overlay -->
+    <div id="scienceOverlay" class="modal-overlay" aria-modal="true" role="dialog">
+        <div class="modal science-modal">
+            <h2>🔬 The Biology of Sitting vs. Squatting</h2>
+            
+            <div class="science-grid">
+                <div class="science-section section-downside">
+                    <h3>⚠️ The Cost of 1+ Hour Continuous Sitting</h3>
+                    <p>Remaining stationary for over 60 minutes deactivates major skeletal muscle groups, causing metabolic shutdown:</p>
+                    <ul>
+                        <li><strong>Enzyme Suppression:</strong> Lipoprotein lipase drop stalls systemic fat-burning processes.</li>
+                        <li><strong>Stagnant Flow:</strong> Poor pelvic circulation compounds cellular stress environments.</li>
+                        <li><strong>Chronic Risks:</strong> Drastically correlates to heightened long-term risks of metabolic complications, prostate cancers, and type-2 diabetes.</li>
+                    </ul>
+                </div>
+
+                <div class="science-section section-upside">
+                    <h3>⚡ The 60-Second Squat Reset Protocol</h3>
+                    <p>Executing explosive deep compound movements triggers deep biometric health defense pathways instantly:</p>
+                    <ul>
+                        <li><strong>Glucose Clearing:</strong> Large muscle contractions directly siphon glucose out of your stream.</li>
+                        <li><strong>Vascular Shockwave:</strong> Immediate lower-body blood pooling release flushes organ tissues clean.</li>
+                        <li><strong>Hormonal Signal:</strong> Ignites natural endorphins and neural clarity to break focus fatigue.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="science-footer-note">
+                <strong>Squatmate</strong> is a lightweight open application engineered by <strong>Piyush Sahoo</strong> as a pro-health initiative. By interrupting stasis blocks every hour, you alter your system's biological trajectory.
+                <button id="closeScienceBtn" class="btn-secondary" style="margin-top: 1rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA DEPLOYMENT STRATEGY (OFFLINE SERVICE WORKER GENERATION) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    self.addEventListener('install', (e) => self.skipWaiting());
+                    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(fetch(e.request).catch(() => new Response('Offline processing active.')));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swURL = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swURL, { scope: './' })
+                    .then(() => console.log('PWA Service Engine Ready.'))
+                    .catch(err => console.warn('PWA Offline context unavailable over raw file protocol. Use local server hosting for complete installation features.'));
+            });
+        }
+
+        // --- TIMER AND LOGIC CORE ENGINE ---
+        let timerId = null;
+        let totalSecondsLeft = 3600; 
+        let timerState = 'stopped';
+        let currentIntervalMinutes = 60;
+        let deferredPrompt = null;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        const intervalInput = document.getElementById('intervalInput');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const testNotifyBtn = document.getElementById('testNotifyBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const completeSquatsBtn = document.getElementById('completeSquatsBtn');
+        const toast = document.getElementById('toast');
+        const installPwaBtn = document.getElementById('installPwaBtn');
+        
+        // Scientific Module Interactive Selectors
+        const whySquatmateBtn = document.getElementById('whySquatmateBtn');
+        const scienceOverlay = document.getElementById('scienceOverlay');
+        const closeScienceBtn = document.getElementById('closeScienceBtn');
+
+        // Toggle Science Modal Context Tabs
+        whySquatmateBtn.addEventListener('click', () => scienceOverlay.classList.add('active'));
+        closeScienceBtn.addEventListener('click', () => scienceOverlay.classList.remove('active'));
+        scienceOverlay.addEventListener('click', (e) => { if (e.target === scienceOverlay) scienceOverlay.classList.remove('active'); });
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPwaBtn.style.display = 'inline-flex'; 
+        });
+
+        installPwaBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') installPwaBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installPwaBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        function playPremiumHarmonicChime() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+
+                const generateOvertone = (freq, type, gainAmount, decayTime) => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(gainAmount, now + 0.08); 
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decayTime);
+
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + decayTime + 0.1);
+                };
+
+                generateOvertone(293.66, 'sine', 0.4, 2.5); 
+                generateOvertone(440.00, 'sine', 0.2, 1.8); 
+                generateOvertone(587.33, 'triangle', 0.05, 1.2); 
+            } catch (e) {
+                console.warn("Audio blocked: ", e);
+            }
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+        }
+
+        function showToast() {
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(totalSecondsLeft / 60);
+            const seconds = totalSecondsLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            if(timerState === 'running') {
+                document.title = `(${String(minutes).padStart(2, '0')}m) Squatmate`;
+            }
+        }
+
+        function setTimerStatusStyle(state) {
+            timerState = state;
+            statusBadge.className = 'status-badge'; 
+            intervalInput.disabled = (state !== 'stopped');
+            resetBtn.disabled = (state === 'stopped');
+
+            if (state === 'running') {
+                statusBadge.classList.add('status-running');
+                statusText.textContent = 'Active Engine';
+                startPauseBtn.textContent = 'Pause Break';
+                startPauseBtn.className = 'btn-secondary btn-full';
+            } else if (state === 'paused') {
+                statusBadge.classList.add('status-paused');
+                statusText.textContent = 'Paused Tracking';
+                startPauseBtn.textContent = 'Resume Session';
+                startPauseBtn.className = 'btn-primary btn-full';
+            } else {
+                statusBadge.classList.add('status-stopped');
+                statusText.textContent = 'Stopped';
+                startPauseBtn.textContent = 'Start Session';
+                startPauseBtn.className = 'btn-primary btn-full';
+                document.title = "Squatmate - Focus & Movement Timer";
+            }
+        }
+
+        function syncDurationFromInput() {
+            let value = parseInt(intervalInput.value, 10);
+            if (isNaN(value) || value < 1) value = 1;
+            if (value > 1440) value = 1440;
+            
+            intervalInput.value = value;
+            currentIntervalMinutes = value;
+            totalSecondsLeft = value * 60;
+            updateTimerDisplay();
+        }
+
+        function triggerReminderAlert() {
+            playPremiumHarmonicChime();
+            modalOverlay.classList.add('active');
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    new Notification("Squatmate Reminder", {
+                        body: "Time to protect your joints. Stand up for 15 quick squats!",
+                        icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏋️‍♂️</text></svg>"
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            } else if ("Notification" in window && Notification.permission === "denied") {
+                showToast();
+            }
+        }
+
+        function tick() {
+            if (totalSecondsLeft <= 0) {
+                clearInterval(timerId);
+                timerId = null;
+                setTimerStatusStyle('stopped');
+                triggerReminderAlert();
+                return;
+            }
+            totalSecondsLeft--;
+            updateTimerDisplay();
+        }
+
+        function handleStartPauseToggle() {
+            requestNotificationPermission();
+
+            if (timerState === 'stopped' || timerState === 'paused') {
+                if (timerState === 'stopped') syncDurationFromInput();
+                setTimerStatusStyle('running');
+                timerId = setInterval(tick, 1000);
+            } else {
+                clearInterval(timerId);
+                timerId = null;
+                setTimerStatusStyle('paused');
+            }
+        }
+
+        function handleReset() {
+            clearInterval(timerId);
+            timerId = null;
+            setTimerStatusStyle('stopped');
+            syncDurationFromInput();
+        }
+
+        function handleSquatsCompletionAction() {
+            modalOverlay.classList.remove('active');
+            handleReset();
+            handleStartPauseToggle(); 
+        }
+
+        startPauseBtn.addEventListener('click', handleStartPauseToggle);
+        resetBtn.addEventListener('click', handleReset);
+        completeSquatsBtn.addEventListener('click', handleSquatsCompletionAction);
+        
+        intervalInput.addEventListener('change', () => {
+            if (timerState === 'stopped') syncDurationFromInput();
+        });
+
+        testNotifyBtn.addEventListener('click', () => {
+            requestNotificationPermission();
+            triggerReminderAlert();
+        });
+
+        intervalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') intervalInput.blur();
+        });
+
+        syncDurationFromInput();
+        setTimerStatusStyle('stopped');
+    </script>
+</body>
+</html>
