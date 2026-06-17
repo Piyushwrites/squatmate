@@ -615,7 +615,6 @@
     </div>
 
     <script>
-        // --- SERVICE WORKER REGISTRATION ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -672,12 +671,13 @@
             }
         });
 
-        // --- EXTENDED SOUND ENGINE: CHIME + 10 CRUNCHY HIGH BEEPS ---
+        // --- MOBILE FIX: SINGLE WEB AUDIO NODES BLOCK FOR CONTINUOUS AUDIO ---
         function triggerAlarmAudio() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 let now = audioCtx.currentTime;
 
+                // 1. Structural ambient foundation base tone layers
                 const playOvertone = (freq, type, gainAmount, decayTime) => {
                     const osc = audioCtx.createOscillator();
                     const gainNode = audioCtx.createGain();
@@ -690,34 +690,37 @@
                     osc.start(now); osc.stop(now + decayTime + 0.1);
                 };
 
-                playOvertone(293.66, 'sine', 0.3, 2.5);
+                playOvertone(293.66, 'sine', 0.25, 2.5);
                 playOvertone(440.00, 'sine', 0.15, 1.8);
 
-                const playBeep = (startTime) => {
+                // 2. Mobile-Friendly Sequential Sound Wave Generation
+                // Instead of 10 individual independent nodes, we create a scheduled matrix inside a single context timeline
+                const totalBeeps = 10;
+                const beepSpacing = 0.35; // Seconds between beeps
+
+                for (let i = 0; i < totalBeeps; i++) {
+                    const beepStart = now + 0.4 + (i * beepSpacing);
+                    
                     const osc = audioCtx.createOscillator();
                     const gainNode = audioCtx.createGain();
                     
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(880, startTime); 
+                    osc.frequency.setValueAtTime(920, beepStart); // Slightly higher pitch to slice through phone speakers
                     
-                    gainNode.gain.setValueAtTime(0, startTime);
-                    gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.02); 
-                    gainNode.gain.setValueAtTime(0.4, startTime + 0.10);          
-                    gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15); 
+                    gainNode.gain.setValueAtTime(0, beepStart);
+                    gainNode.gain.linearRampToValueAtTime(0.5, beepStart + 0.03); 
+                    gainNode.gain.setValueAtTime(0.5, beepStart + 0.12);          
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, beepStart + 0.18); 
                     
                     osc.connect(gainNode);
                     gainNode.connect(audioCtx.destination);
-                    osc.start(startTime);
-                    osc.stop(startTime + 0.16);
-                };
-
-                // Incremented counter configuration boundary to execute exactly 10 loops
-                for (let i = 0; i < 10; i++) {
-                    playBeep(now + 0.3 + (i * 0.25));
+                    
+                    osc.start(beepStart);
+                    osc.stop(beepStart + 0.2);
                 }
 
             } catch (e) {
-                console.warn("Audio Context block: ", e);
+                console.warn("Mobile Audio context restriction triggered: ", e);
             }
         }
 
