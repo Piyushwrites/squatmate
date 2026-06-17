@@ -211,7 +211,7 @@
         .btn-install {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            display: none; /* Shows dynamically when browser approves environment */
+            display: none; 
         }
         .btn-install:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
 
@@ -219,7 +219,7 @@
             grid-column: span 2;
         }
 
-        /* --- FIX: RESPONSIVE INTERNAL MODAL SCROLLBARS --- */
+        /* --- RESPONSIVE INTERNAL MODAL SCROLLBARS --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -615,12 +615,10 @@
     </div>
 
     <script>
-        // --- SECURE REAL SERVICE WORKER REGISTRATION FROM FILE ---
+        // --- SERVICE WORKER REGISTRATION ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(() => console.log('PWA Service Engine Active.'))
-                    .catch(err => console.error('PWA Engine error:', err));
+                navigator.serviceWorker.register('sw.js').catch(() => {});
             });
         }
 
@@ -658,11 +656,10 @@
             if(e.target === modalOverlay) modalOverlay.classList.remove('active');
         });
 
-        // --- NATIVE PWA INTERCEPT ENGINE LISTENER ---
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installPwaBtn.style.display = 'inline-flex'; // Reveals install button natively on GitHub pages
+            installPwaBtn.style.display = 'inline-flex'; 
         });
 
         installPwaBtn.addEventListener('click', async () => {
@@ -675,28 +672,53 @@
             }
         });
 
-        window.addEventListener('appinstalled', () => {
-            installPwaBtn.style.display = 'none';
-            deferredPrompt = null;
-        });
-
-        function playPremiumHarmonicChime() {
+        // --- EXTENDED SOUND ENGINE: CHIME + 10 CRUNCHY HIGH BEEPS ---
+        function triggerAlarmAudio() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const now = audioCtx.currentTime;
-                const playTone = (f, g, d) => {
+                let now = audioCtx.currentTime;
+
+                const playOvertone = (freq, type, gainAmount, decayTime) => {
                     const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.frequency.setValueAtTime(f, now);
-                    gain.gain.setValueAtTime(0, now);
-                    gain.gain.linearRampToValueAtTime(g, now + 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, now + d);
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(now); osc.stop(now + d + 0.1);
+                    const gainNode = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, now);
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(gainAmount, now + 0.08); 
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decayTime);
+                    osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + decayTime + 0.1);
                 };
-                playTone(293.66, 0.4, 2.5);
-                playTone(440.00, 0.2, 1.8);
-            } catch (e) {}
+
+                playOvertone(293.66, 'sine', 0.3, 2.5);
+                playOvertone(440.00, 'sine', 0.15, 1.8);
+
+                const playBeep = (startTime) => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, startTime); 
+                    
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.02); 
+                    gainNode.gain.setValueAtTime(0.4, startTime + 0.10);          
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15); 
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.16);
+                };
+
+                // Incremented counter configuration boundary to execute exactly 10 loops
+                for (let i = 0; i < 10; i++) {
+                    playBeep(now + 0.3 + (i * 0.25));
+                }
+
+            } catch (e) {
+                console.warn("Audio Context block: ", e);
+            }
         }
 
         function updateTimerDisplay() {
@@ -729,20 +751,78 @@
             }
         }
 
+        function saveStateToStorage() {
+            localStorage.setItem('squatmate_state', timerState);
+            localStorage.setItem('squatmate_input_val', intervalInput.value);
+            
+            if (timerState === 'running') {
+                const expirationTimestamp = Date.now() + (totalSecondsLeft * 1000);
+                localStorage.setItem('squatmate_expiration', expirationTimestamp);
+            } else if (timerState === 'paused') {
+                localStorage.setItem('squatmate_seconds_left', totalSecondsLeft);
+            } else {
+                localStorage.removeItem('squatmate_expiration');
+                localStorage.removeItem('squatmate_seconds_left');
+            }
+        }
+
+        function loadStateFromStorage() {
+            const savedState = localStorage.getItem('squatmate_state');
+            const savedInput = localStorage.getItem('squatmate_input_val');
+
+            if (savedInput) {
+                intervalInput.value = savedInput;
+            }
+
+            if (!savedState || savedState === 'stopped') {
+                syncDurationFromInput();
+                return;
+            }
+
+            if (savedState === 'paused') {
+                const savedSeconds = localStorage.getItem('squatmate_seconds_left');
+                totalSecondsLeft = savedSeconds ? parseInt(savedSeconds, 10) : parseInt(intervalInput.value, 10) * 60;
+                setTimerStatusStyle('paused');
+                updateTimerDisplay();
+            } else if (savedState === 'running') {
+                const expiration = localStorage.getItem('squatmate_expiration');
+                if (expiration) {
+                    const remainingMs = parseInt(expiration, 10) - Date.now();
+                    if (remainingMs > 0) {
+                        totalSecondsLeft = Math.floor(remainingMs / 1000);
+                        setTimerStatusStyle('running');
+                        updateTimerDisplay();
+                        timerId = setInterval(tick, 1000);
+                    } else {
+                        totalSecondsLeft = 0;
+                        updateTimerDisplay();
+                        setTimerStatusStyle('stopped');
+                        triggerAlarmAudio();
+                        modalOverlay.classList.add('active');
+                        localStorage.removeItem('squatmate_expiration');
+                    }
+                } else {
+                    syncDurationFromInput();
+                }
+            }
+        }
+
         function syncDurationFromInput() {
             let value = parseInt(intervalInput.value, 10);
             if (isNaN(value) || value < 1) value = 1;
             intervalInput.value = value;
             totalSecondsLeft = value * 60;
             updateTimerDisplay();
+            saveStateToStorage();
         }
 
         function tick() {
             if (totalSecondsLeft <= 0) {
                 clearInterval(timerId); timerId = null;
                 setTimerStatusStyle('stopped');
-                playPremiumHarmonicChime();
+                triggerAlarmAudio();
                 modalOverlay.classList.add('active');
+                saveStateToStorage();
                 return;
             }
             totalSecondsLeft--;
@@ -758,6 +838,7 @@
                 clearInterval(timerId); timerId = null;
                 setTimerStatusStyle('paused');
             }
+            saveStateToStorage();
         });
 
         resetBtn.addEventListener('click', () => {
@@ -775,12 +856,15 @@
         });
         
         document.getElementById('testNotifyBtn').addEventListener('click', () => {
-            playPremiumHarmonicChime();
+            triggerAlarmAudio();
             modalOverlay.classList.add('active');
         });
 
-        intervalInput.addEventListener('change', () => { if (timerState === 'stopped') syncDurationFromInput(); });
-        syncDurationFromInput();
+        intervalInput.addEventListener('change', () => { 
+            if (timerState === 'stopped') syncDurationFromInput(); 
+        });
+
+        loadStateFromStorage();
     </script>
 </body>
 </html>
