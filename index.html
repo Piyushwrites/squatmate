@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Squatmate - Focus & Movement Timer</title>
     
-    <!-- PWA Manifest Dynamic Injection -->
     <script>
         const manifest = {
             "short_name": "Squatmate",
@@ -68,7 +67,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2rem;
+            padding: 1.5rem;
             overflow-x: hidden;
         }
 
@@ -78,14 +77,15 @@
             align-items: center;
             justify-content: center;
             width: 100%;
+            padding: 1rem 0;
         }
 
         /* --- SQUATMATE CARD --- */
         .card {
             background: var(--card-bg);
             width: 100%;
-            max-width: 440px;
-            padding: 3rem 2.5rem;
+            max-width: 410px;
+            padding: 2.5rem 2rem;
             border-radius: var(--radius);
             border: 1px solid var(--card-border);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -97,7 +97,7 @@
             font-size: 2.25rem;
             font-weight: 800;
             letter-spacing: -0.03em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             background: linear-gradient(to right, #ffffff, #94a3b8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -106,7 +106,7 @@
         .subtitle {
             font-size: 0.95rem;
             color: var(--text-muted);
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         /* --- STATUS BADGE --- */
@@ -120,7 +120,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border: 1px solid transparent;
             transition: var(--transition);
         }
@@ -152,7 +152,7 @@
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.02em;
             color: var(--text-main);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             line-height: 1;
         }
 
@@ -162,9 +162,9 @@
             align-items: center;
             justify-content: center;
             gap: 0.6rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             background: rgba(0, 0, 0, 0.2);
-            padding: 0.8rem;
+            padding: 0.7rem;
             border-radius: 14px;
             border: 1px solid var(--card-border);
         }
@@ -235,7 +235,7 @@
         .btn-install {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            display: none; 
+            display: inline-flex; /* Hard-forced layout safety block mapping */
         }
         .btn-install:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
 
@@ -243,7 +243,7 @@
             grid-column: span 2;
         }
 
-        /* --- LIGHTWEIGHT POPUP MODAL --- */
+        /* --- FIX: SECURE RESPONSIVE MODAL OVERLAYS ENGINE --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -259,6 +259,7 @@
             opacity: 0;
             pointer-events: none;
             transition: var(--transition);
+            padding: 1rem; /* Prevents overflow clipping on mobile viewports */
         }
 
         .modal-overlay.active {
@@ -269,105 +270,78 @@
         .modal {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 3rem 2.5rem;
+            padding: 2rem 1.75rem;
             border-radius: var(--radius);
             max-width: 420px;
-            width: 90%;
+            width: 100%;
             text-align: center;
             box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
             transform: scale(0.95);
             transition: var(--transition);
+            
+            /* Anti-overflow boundaries layout */
+            max-height: calc(100vh - 2rem);
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-overlay.active .modal {
             transform: scale(1);
         }
 
-        .modal-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 15px var(--primary-glow));
-        }
-
-        .modal h2 {
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
-            font-weight: 800;
-        }
-
-        .modal p {
-            color: #94a3b8;
-            margin-bottom: 2rem;
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-
-        .btn-success { 
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #0b0f19; 
-            width: 100%;
-            font-size: 1.05rem;
-            padding: 1.1rem;
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-        }
-        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4); }
-
-        /* --- NOTIFICATION TOAST --- */
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: #1e1b4b;
-            border: 1px solid #3730a3;
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transform: translateY(200%);
-            transition: var(--transition);
-            z-index: 2000;
-            font-size: 0.9rem;
-            color: #c7d2fe;
-        }
-        .toast.show { transform: translateY(0); }
-
-        /* --- INFO MODALS COMMON (WHY & HOW) --- */
+        /* --- FIX: INFO MODAL SPECIFIC CAPACITY EXPANSIONS --- */
         .info-modal {
-            max-width: 580px;
-            width: 95%;
-            text-align: left;
-            padding: 2.2rem;
+            max-width: 520px;
         }
 
         .info-modal h2 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             background: linear-gradient(to right, #ffffff, #10b981);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            flex-shrink: 0; /* Keeps header frozen at top boundary */
+        }
+
+        /* Internal viewport layout wrapping containing frame updates */
+        .modal-scroll-body {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 0.5rem;
+            text-align: left;
+            margin-bottom: 1rem;
+            
+            /* Custom styled fluid scroll trackbar UI */
+            scrollbar-width: thin;
+            scrollbar-color: var(--card-border) transparent;
+        }
+
+        .modal-scroll-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .modal-scroll-body::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 4px;
         }
 
         .info-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.1rem;
-            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
         .info-section {
             background: rgba(0, 0, 0, 0.2);
-            padding: 1rem 1.25rem;
+            padding: 1rem;
             border-radius: 12px;
             border: 1px solid var(--card-border);
         }
 
         .info-section h3 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.5rem;
@@ -381,7 +355,7 @@
         .section-neutral h3 { color: #3b82f6; }
 
         .info-section p {
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             color: #94a3b8;
             line-height: 1.5;
         }
@@ -397,6 +371,7 @@
             margin-bottom: 0.35rem;
             padding-left: 0.75rem;
             position: relative;
+            line-height: 1.4;
         }
 
         .info-section li::before {
@@ -412,17 +387,18 @@
             font-size: 0.8rem;
             color: var(--text-muted);
             border-top: 1px solid var(--card-border);
-            padding-top: 1rem;
+            padding-top: 0.85rem;
             line-height: 1.4;
+            flex-shrink: 0; /* Locks clean navigation back controls */
         }
 
-        /* --- HOW-TO SQUAT SPECIFIC STYLES --- */
+        /* --- SQUAT BLUEPRINT VISUAL VECTORS --- */
         .squat-sketch-box {
             display: flex;
             justify-content: space-around;
             align-items: center;
             background: #0b0f19;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 10px;
             margin-bottom: 0.75rem;
             border: 1px dashed var(--card-border);
@@ -434,33 +410,35 @@
         }
 
         .sketch-container svg {
-            width: 75px;
-            height: 110px;
+            width: 65px;
+            height: 95px;
         }
 
         .sketch-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #64748b;
             margin-top: 0.25rem;
             font-weight: 600;
             text-transform: uppercase;
         }
 
-        /* --- SPLIT ACTIONABLE FOOTER LAYOUT --- */
+        /* --- RESPONSIBILITY FIX: FOOTER MANAGEMENT GRID --- */
         .footer-container {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             width: 100%;
             margin-top: auto;
-            padding-top: 2rem;
+            padding-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .footer-actions-right {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 0.6rem;
+            gap: 0.5rem;
         }
 
         .creative-footer, .info-trigger-btn {
@@ -476,31 +454,28 @@
             padding: 0;
             cursor: pointer;
             transition: var(--transition);
+            white-space: nowrap;
         }
 
-        .creative-footer { cursor: default; padding-bottom: 0.2rem;}
+        .creative-footer { cursor: default; padding-bottom: 0.1rem; }
 
         .creative-footer::before {
             content: '↳';
             margin-right: 0.5rem;
             color: var(--primary);
             font-weight: 700;
-            transition: var(--transition);
         }
 
         .info-trigger-btn::after {
             content: '◿';
             margin-left: 0.5rem;
             color: var(--primary);
-            transition: var(--transition);
         }
 
         .author-name {
             color: #94a3b8;
             margin-left: 0.35rem;
             font-weight: 600;
-            position: relative;
-            transition: var(--transition);
         }
 
         .author-name::after {
@@ -514,22 +489,27 @@
             50% { opacity: 1; }
         }
 
-        /* Interactive Footers Hover Triggers */
-        .creative-footer:hover .author-name {
-            color: var(--primary);
-            text-shadow: 0 0 8px var(--primary-glow);
-        }
-        .creative-footer:hover::before { transform: translateX(3px); }
-
+        .creative-footer:hover .author-name { color: var(--primary); text-shadow: 0 0 8px var(--primary-glow); }
         .info-trigger-btn:hover { color: #f8fafc; }
-        .info-trigger-btn:hover::after { transform: translate(2px, 2px); filter: drop-shadow(0 0 5px var(--primary)); }
+
+        /* Mobile specific style overwrites adjustments */
+        @media(max-width: 480px) {
+            .footer-container {
+                flex-direction: column-reverse;
+                align-items: center;
+                text-align: center;
+            }
+            .footer-actions-right {
+                align-items: center;
+                width: 100%;
+            }
+            .creative-footer {
+                align-self: center;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <div id="toast" class="toast" role="alert">
-        🔮 Note: Notification popups blocked. App sound and visual modal active!
-    </div>
 
     <main>
         <div class="card">
@@ -541,11 +521,11 @@
                 <span id="statusText">Stopped</span>
             </div>
 
-            <div id="timerDisplay" class="timer-display" aria-live="polite">60:00</div>
+            <div id="timerDisplay" class="timer-display">60:00</div>
 
             <div class="settings-group">
                 <label id="intervalLabel" for="intervalInput">Sit Time Target:</label>
-                <input type="number" id="intervalInput" value="60" min="1" max="1440" aria-labelledby="intervalLabel">
+                <input type="number" id="intervalInput" value="60" min="1" max="1440">
                 <span>mins</span>
             </div>
 
@@ -553,12 +533,11 @@
                 <button id="startPauseBtn" class="btn-primary btn-full">Start Session</button>
                 <button id="resetBtn" class="btn-secondary">Reset</button>
                 <button id="testNotifyBtn" class="btn-secondary">Test Alert</button>
-                <button id="installPwaBtn" class="btn-install btn-full">⬇ Install Squatmate Desktop App</button>
+                <button id="installPwaBtn" class="btn-install btn-full">⬇ Download Squatmate App</button>
             </div>
         </div>
     </main>
 
-    <!-- Balanced Left Side Branding / Right Side Strategic Utility Footers -->
     <div class="footer-container">
         <div class="creative-footer">
             A side project by <span class="author-name">Piyush Sahoo</span>
@@ -569,143 +548,120 @@
         </div>
     </div>
 
-    <!-- Active Movement Prompt Modal -->
-    <div id="modalOverlay" class="modal-overlay" aria-modal="true" role="dialog">
+    <div id="modalOverlay" class="modal-overlay">
         <div class="modal">
             <div class="modal-icon">🌱</div>
             <h2>Time for Squats</h2>
-            <p>Your continuous sit interval limit is reached. Step back, protect your posture, and execute 15 complete bodyweight squats.</p>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">Your continuous sit interval limit is reached. Step back, protect your posture, and execute 15 complete bodyweight squats.</p>
             <button id="completeSquatsBtn" class="btn-success">Completed, Let's Reset</button>
         </div>
     </div>
 
-    <!-- WHY SQUATMATE MODAL OVERLAY -->
-    <div id="scienceOverlay" class="modal-overlay" aria-modal="true" role="dialog">
+    <div id="scienceOverlay" class="modal-overlay">
         <div class="modal info-modal">
             <h2>🔬 The Biology of Sitting vs. Squatting</h2>
             
-            <div class="info-grid">
-                <div class="info-section section-downside">
-                    <h3>⚠️ The Cost of 1+ Hour Continuous Sitting</h3>
-                    <p>Remaining stationary for over 60 minutes deactivates major skeletal muscle groups, causing metabolic shutdown:</p>
-                    <ul>
-                        <li><strong>Enzyme Suppression:</strong> Lipoprotein lipase drop stalls systemic fat-burning processes.</li>
-                        <li><strong>Stagnant Flow:</strong> Poor pelvic circulation compounds cellular stress environments.</li>
-                        <li><strong>Chronic Risks:</strong> Drastically correlates to heightened long-term risks of metabolic complications, prostate cancers, and type-2 diabetes.</li>
-                    </ul>
-                </div>
+            <div class="modal-scroll-body">
+                <div class="info-grid">
+                    <div class="info-section section-downside">
+                        <h3>⚠️ The Cost of 1+ Hour Continuous Sitting</h3>
+                        <p>Remaining stationary for over 60 minutes deactivates major skeletal muscle groups, causing metabolic shutdown:</p>
+                        <ul>
+                            <li><strong>Enzyme Suppression:</strong> Lipoprotein lipase drop stalls systemic fat-burning processes.</li>
+                            <li><strong>Stagnant Flow:</strong> Poor pelvic circulation compounds cellular stress environments.</li>
+                            <li><strong>Chronic Risks:</strong> Drastically correlates to heightened long-term risks of metabolic complications, prostate cancers, and type-2 diabetes.</li>
+                        </ul>
+                    </div>
 
-                <div class="info-section section-upside">
-                    <h3>⚡ The 60-Second Squat Reset Protocol</h3>
-                    <p>Executing explosive deep compound movements triggers deep biometric health defense pathways instantly:</p>
-                    <ul>
-                        <li><strong>Glucose Clearing:</strong> Large muscle contractions directly siphon glucose out of your stream.</li>
-                        <li><strong>Vascular Shockwave:</strong> Immediate lower-body blood pooling release flushes organ tissues clean.</li>
-                        <li><strong>Hormonal Signal:</strong> Ignites natural endorphins and neural clarity to break focus fatigue.</li>
-                    </ul>
+                    <div class="info-section section-upside">
+                        <h3>⚡ The 60-Second Squat Reset Protocol</h3>
+                        <p>Executing explosive deep compound movements triggers deep biometric health defense pathways instantly:</p>
+                        <ul>
+                            <li><strong>Glucose Clearing:</strong> Large muscle contractions directly siphon glucose out of your stream.</li>
+                            <li><strong>Vascular Shockwave:</strong> Immediate lower-body blood pooling release flushes organ tissues clean.</li>
+                            <li><strong>Hormonal Signal:</strong> Ignites natural endorphins and neural clarity to break focus fatigue.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
             <div class="info-footer-note">
-                <strong>Squatmate</strong> is a lightweight open application engineered by <strong>Piyush Sahoo</strong> as a pro-health initiative. By interrupting stasis blocks every hour, you alter your system's biological trajectory.
-                <button id="closeScienceBtn" class="btn-secondary" style="margin-top: 1rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
+                <strong>Squatmate</strong> is a lightweight open application engineered by <strong>Piyush Sahoo</strong> as a pro-health initiative. 
+                <button id="closeScienceBtn" class="btn-secondary" style="margin-top: 0.75rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
             </div>
         </div>
     </div>
 
-    <!-- HOW TO SQUAT MODAL OVERLAY (WITH EMBEDDED OFFLINE VECTOR SKETCHES) -->
-    <div id="howSquatOverlay" class="modal-overlay" aria-modal="true" role="dialog">
+    <div id="howSquatOverlay" class="modal-overlay">
         <div class="modal info-modal">
             <h2>📐 Perfectly Formed Bodyweight Squats</h2>
             
-            <!-- Offline Vector Sketch Board Container -->
-            <div class="squat-sketch-box">
-                <div class="sketch-container">
-                    <!-- Phase 1 Vector Art Graphic Setup -->
-                    <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Floor Line -->
-                        <line x1="10" y1="130" x2="90" y2="130" stroke="#1e2943" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Head -->
-                        <circle cx="50" cy="25" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
-                        <!-- Spine / Torso -->
-                        <line x1="50" y1="33" x2="50" y2="80" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
-                        <!-- Arms extended balance -->
-                        <line x1="50" y1="45" x2="82" y2="45" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Legs / Hips Base Stand -->
-                        <line x1="50" y1="80" x2="38" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
-                        <line x1="50" y1="80" x2="62" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
-                    </svg>
-                    <div class="sketch-label">1. Setup Profile</div>
+            <div class="modal-scroll-body">
+                <div class="squat-sketch-box">
+                    <div class="sketch-container">
+                        <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="10" y1="130" x2="90" y2="130" stroke="#1e2943" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="50" cy="25" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
+                            <line x1="50" y1="33" x2="50" y2="80" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="50" y1="45" x2="82" y2="45" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="50" y1="80" x2="38" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="50" y1="80" x2="62" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+                        </svg>
+                        <div class="sketch-label">1. Setup Stand</div>
+                    </div>
+                    <div class="sketch-container">
+                        <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="10" y1="130" x2="90" y2="130" stroke="#1e2943" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="35" cy="55" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
+                            <line x1="35" y1="63" x2="48" y2="95" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="35" y1="70" x2="70" y2="70" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="48" y1="95" x2="78" y2="95" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="78" y1="95" x2="72" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+                        </svg>
+                        <div class="sketch-label">2. Deep Parallel</div>
+                    </div>
                 </div>
 
-                <div class="sketch-container">
-                    <!-- Phase 2 Vector Art Graphic Execution -->
-                    <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="10" y1="130" x2="90" y2="130" stroke="#1e2943" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Head shifting back slightly -->
-                        <circle cx="35" cy="55" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
-                        <!-- Inclined flat spine -->
-                        <line x1="35" y1="63" x2="48" y2="95" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
-                        <!-- Arms straight out forward -->
-                        <line x1="35" y1="70" x2="70" y2="70" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Thigh dropped parallel to floor line -->
-                        <line x1="48" y1="95" x2="78" y2="95" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
-                        <!-- Shin stable balance vertical axis -->
-                        <line x1="78" y1="95" x2="72" y2="130" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
-                    </svg>
-                    <div class="sketch-label">2. Deep Execution</div>
-                </div>
-            </div>
-
-            <div class="info-grid">
-                <div class="info-section section-guide">
-                    <h3>🎯 Precision Execution Mechanics</h3>
-                    <ul>
-                        <li><strong>The Stance:</strong> Plant feet shoulder-width apart, toes flared slightly out (15°).</li>
-                        <li><strong>The Descent:</strong> Break at your hips first, pushing your glutes backward like dropping cleanly into an invisible chair.</li>
-                        <li><strong>The Depth:</strong> Lower down smoothly until thighs track parallel to the ground layout line. Keep knees pushed out over your toes.</li>
-                        <li><strong>Drive Phase:</strong> Drive forcefully up directly through your mid-foot engine while maintaining an upright chest profile.</li>
-                    </ul>
-                </div>
-
-                <div class="info-section section-neutral">
-                    <h3>🔒 Joint Protection & Safety Rules</h3>
-                    <p><strong>Heels Flat:</strong> Never let your heels lift off the floor. If they do, reduce descent depth slightly. <br><strong>Spine Lock:</strong> Maintain a flat, neutral back posture; avoid rounding or hunching your shoulders forward.</p>
+                <div class="info-grid">
+                    <div class="info-section section-guide">
+                        <h3>🎯 Precision Mechanics</h3>
+                        <ul>
+                            <li><strong>The Stance:</strong> Plant feet shoulder-width apart, toes flared slightly out (15°).</li>
+                            <li><strong>The Descent:</strong> Break at your hips first, pushing your glutes backward like dropping into an invisible chair.</li>
+                            <li><strong>The Depth:</strong> Lower down smoothly until thighs track parallel to the ground layout line.</li>
+                        </ul>
+                    </div>
+                    <div class="info-section section-neutral">
+                        <h3>🔒 Safety Rules</h3>
+                        <p>Keep your heels flat on the floor at all times. Maintain a rigid, flat chest and spine to protect your lower lumbar back.</p>
+                    </div>
                 </div>
             </div>
 
             <div class="info-footer-note">
-                Form dictates biomechanical reward. Rapid, unchecked reps increase mechanical strain. Focus on slow, intentional, deep movements.
-                <button id="closeHowSquatBtn" class="btn-secondary" style="margin-top: 1rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
+                Focus on slow, high-quality, intentional, deep movements.
+                <button id="closeHowSquatBtn" class="btn-secondary" style="margin-top: 0.75rem; width: 100%; padding: 0.6rem;">Return to Timer</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- DATA DEPLOYMENT STRATEGY (OFFLINE SERVICE WORKER GENERATION) ---
+        // Service worker setup block
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
                     self.addEventListener('install', (e) => self.skipWaiting());
                     self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(fetch(e.request).catch(() => new Response('Offline processing active.')));
-                    });
+                    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => new Response('Offline.'))));
                 `;
                 const blob = new Blob([swCode], { type: 'text/javascript' });
-                const swURL = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swURL, { scope: './' })
-                    .then(() => console.log('PWA Service Engine Ready.'))
-                    .catch(err => console.warn('PWA Offline mode ready.'));
+                navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: './' }).catch(() => {});
             });
         }
 
-        // --- TIMER AND LOGIC CORE ENGINE ---
         let timerId = null;
         let totalSecondsLeft = 3600; 
         let timerState = 'stopped';
-        let currentIntervalMinutes = 60;
         let deferredPrompt = null;
 
         const timerDisplay = document.getElementById('timerDisplay');
@@ -714,13 +670,10 @@
         const intervalInput = document.getElementById('intervalInput');
         const startPauseBtn = document.getElementById('startPauseBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const testNotifyBtn = document.getElementById('testNotifyBtn');
         const modalOverlay = document.getElementById('modalOverlay');
         const completeSquatsBtn = document.getElementById('completeSquatsBtn');
-        const toast = document.getElementById('toast');
         const installPwaBtn = document.getElementById('installPwaBtn');
         
-        // Interactive Overlay Elements Map
         const whySquatmateBtn = document.getElementById('whySquatmateBtn');
         const scienceOverlay = document.getElementById('scienceOverlay');
         const closeScienceBtn = document.getElementById('closeScienceBtn');
@@ -729,84 +682,75 @@
         const howSquatOverlay = document.getElementById('howSquatOverlay');
         const closeHowSquatBtn = document.getElementById('closeHowSquatBtn');
 
-        // Scientific Analysis Information Tab Controllers
+        // Modal Action Toggles Setup
         whySquatmateBtn.addEventListener('click', () => scienceOverlay.classList.add('active'));
         closeScienceBtn.addEventListener('click', () => scienceOverlay.classList.remove('active'));
-        scienceOverlay.addEventListener('click', (e) => { if (e.target === scienceOverlay) scienceOverlay.classList.remove('active'); });
-
-        // Biomechanical Form Guide Tab Controllers
         howSquatBtn.addEventListener('click', () => howSquatOverlay.classList.add('active'));
         closeHowSquatBtn.addEventListener('click', () => howSquatOverlay.classList.remove('active'));
-        howSquatOverlay.addEventListener('click', (e) => { if (e.target === howSquatOverlay) howSquatOverlay.classList.remove('active'); });
 
+        // Close when clicking outside content box boundary area
+        window.addEventListener('click', (e) => {
+            if(e.target === scienceOverlay) scienceOverlay.classList.remove('active');
+            if(e.target === howSquatOverlay) howSquatOverlay.classList.remove('active');
+            if(e.target === modalOverlay) modalOverlay.classList.remove('active');
+        });
+
+        // --- FIX: INTEGRATED NATIVE HYBRID DOWNLOAD AND PWA FALLBACK PIPELINE ENGINE ---
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installPwaBtn.style.display = 'inline-flex'; 
+            installPwaBtn.textContent = "⬇ Install Squatmate App";
         });
 
         installPwaBtn.addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') installPwaBtn.style.display = 'none';
-            deferredPrompt = null;
-        });
-
-        window.addEventListener('appinstalled', () => {
-            installPwaBtn.style.display = 'none';
-            deferredPrompt = null;
+            if (deferredPrompt) {
+                // If native PWA browser installation environment criteria matches perfectly
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') deferredPrompt = null;
+            } else {
+                // FALLBACK: Auto-bundle the source file and deliver an offline executable directly to user's local disk
+                try {
+                    const pageSource = document.documentElement.outerHTML;
+                    const downloadBlob = new Blob([pageSource], { type: 'text/html' });
+                    const downloadUrl = URL.createObjectURL(downloadBlob);
+                    const tempAnchor = document.createElement('a');
+                    tempAnchor.href = downloadUrl;
+                    tempAnchor.download = 'Squatmate_App.html';
+                    document.body.appendChild(tempAnchor);
+                    tempAnchor.click();
+                    document.body.removeChild(tempAnchor);
+                    URL.revokeObjectURL(downloadUrl);
+                } catch(err) {
+                    console.error("Direct file backup deployment array failed: ", err);
+                }
+            }
         });
 
         function playPremiumHarmonicChime() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const now = audioCtx.currentTime;
-
-                const generateOvertone = (freq, type, gainAmount, decayTime) => {
+                const playTone = (f, g, d) => {
                     const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-
-                    osc.type = type;
-                    osc.frequency.setValueAtTime(freq, now);
-
-                    gainNode.gain.setValueAtTime(0, now);
-                    gainNode.gain.linearRampToValueAtTime(gainAmount, now + 0.08); 
-                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decayTime);
-
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-
-                    osc.start(now);
-                    osc.stop(now + decayTime + 0.1);
+                    const gain = audioCtx.createGain();
+                    osc.frequency.setValueAtTime(f, now);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(g, now + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + d);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + d + 0.1);
                 };
-
-                generateOvertone(293.66, 'sine', 0.4, 2.5); 
-                generateOvertone(440.00, 'sine', 0.2, 1.8); 
-                generateOvertone(587.33, 'triangle', 0.05, 1.2); 
-            } catch (e) {
-                console.warn("Audio blocked: ", e);
-            }
-        }
-
-        function requestNotificationPermission() {
-            if ("Notification" in window && Notification.permission === "default") {
-                Notification.requestPermission();
-            }
-        }
-
-        function showToast() {
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 5000);
+                playTone(293.66, 0.4, 2.5);
+                playTone(440.00, 0.2, 1.8);
+            } catch (e) {}
         }
 
         function updateTimerDisplay() {
             const minutes = Math.floor(totalSecondsLeft / 60);
             const seconds = totalSecondsLeft % 60;
             timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            if(timerState === 'running') {
-                document.title = `(${String(minutes).padStart(2, '0')}m) Squatmate`;
-            }
+            if(timerState === 'running') document.title = `(${String(minutes).padStart(2, '0')}m) Squatmate`;
         }
 
         function setTimerStatusStyle(state) {
@@ -837,90 +781,59 @@
         function syncDurationFromInput() {
             let value = parseInt(intervalInput.value, 10);
             if (isNaN(value) || value < 1) value = 1;
-            if (value > 1440) value = 1440;
-            
             intervalInput.value = value;
-            currentIntervalMinutes = value;
             totalSecondsLeft = value * 60;
             updateTimerDisplay();
         }
 
-        function triggerReminderAlert() {
-            playPremiumHarmonicChime();
-            modalOverlay.classList.add('active');
-
-            if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                    new Notification("Squatmate Reminder", {
-                        body: "Time to protect your joints. Stand up for 15 quick squats!",
-                        icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏋️‍♂️</text></svg>"
-                    });
-                } catch (err) {
-                    console.error(err);
-                }
-            } else if ("Notification" in window && Notification.permission === "denied") {
-                showToast();
-            }
-        }
-
         function tick() {
             if (totalSecondsLeft <= 0) {
-                clearInterval(timerId);
-                timerId = null;
+                clearInterval(timerId); timerId = null;
                 setTimerStatusStyle('stopped');
-                triggerReminderAlert();
+                playPremiumHarmonicChime();
+                modalOverlay.classList.add('active');
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("Squatmate Reminder", { body: "Stand up for 15 quick squats!" });
+                }
                 return;
             }
             totalSecondsLeft--;
             updateTimerDisplay();
         }
 
-        function handleStartPauseToggle() {
-            requestNotificationPermission();
-
+        startPauseBtn.addEventListener('click', () => {
+            if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
             if (timerState === 'stopped' || timerState === 'paused') {
                 if (timerState === 'stopped') syncDurationFromInput();
                 setTimerStatusStyle('running');
                 timerId = setInterval(tick, 1000);
             } else {
-                clearInterval(timerId);
-                timerId = null;
+                clearInterval(timerId); timerId = null;
                 setTimerStatusStyle('paused');
             }
-        }
+        });
 
-        function handleReset() {
-            clearInterval(timerId);
-            timerId = null;
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerId); timerId = null;
             setTimerStatusStyle('stopped');
             syncDurationFromInput();
-        }
+        });
 
-        function handleSquatsCompletionAction() {
+        completeSquatsBtn.addEventListener('click', () => {
             modalOverlay.classList.remove('active');
-            handleReset();
-            handleStartPauseToggle(); 
-        }
-
-        startPauseBtn.addEventListener('click', handleStartPauseToggle);
-        resetBtn.addEventListener('click', handleReset);
-        completeSquatsBtn.addEventListener('click', handleSquatsCompletionAction);
+            clearInterval(timerId); timerId = null;
+            setTimerStatusStyle('stopped');
+            syncDurationFromInput();
+            startPauseBtn.click();
+        });
         
-        intervalInput.addEventListener('change', () => {
-            if (timerState === 'stopped') syncDurationFromInput();
+        document.getElementById('testNotifyBtn').addEventListener('click', () => {
+            playPremiumHarmonicChime();
+            modalOverlay.classList.add('active');
         });
 
-        testNotifyBtn.addEventListener('click', () => {
-            requestNotificationPermission();
-            triggerReminderAlert();
-        });
-
-        intervalInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') intervalInput.blur();
-        });
-
+        intervalInput.addEventListener('change', () => { if (timerState === 'stopped') syncDurationFromInput(); });
         syncDurationFromInput();
-        setTimerStatusStyle('stopped');
     </script>
 </body>
 </html>
