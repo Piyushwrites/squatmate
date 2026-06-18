@@ -1,31 +1,29 @@
-const CACHE_NAME = 'squatmate-v3'; // Incremented to v3 to break old mobile caches
+const CACHE_NAME = 'squatmate-v4'; // Incremented to v4 to force update the background-sync system
 const ASSETS = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// The install event fires when the browser detects a new service worker file
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
-  self.skipWaiting(); // Forces the waiting service worker to become active immediately
+  self.skipWaiting(); 
 });
 
-// The activate event is the perfect place to clean up old, outdated caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('Removing old cache tier:', key);
-            return caches.delete(key); // Deletes squatmate-v2 and squatmate-v1
+            console.log('Clearing old cache tier:', key);
+            return caches.delete(key); // Safely purges v3, v2, and v1 from memory
           }
         })
       );
-    }).then(() => self.clients.claim()) // Forces the new worker to take control of all open tabs
+    }).then(() => self.clients.claim()) 
   );
 });
 
