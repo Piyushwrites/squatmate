@@ -671,13 +671,11 @@
             }
         });
 
-        // --- MOBILE FIX: SINGLE WEB AUDIO NODES BLOCK FOR CONTINUOUS AUDIO ---
         function triggerAlarmAudio() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 let now = audioCtx.currentTime;
 
-                // 1. Structural ambient foundation base tone layers
                 const playOvertone = (freq, type, gainAmount, decayTime) => {
                     const osc = audioCtx.createOscillator();
                     const gainNode = audioCtx.createGain();
@@ -693,19 +691,16 @@
                 playOvertone(293.66, 'sine', 0.25, 2.5);
                 playOvertone(440.00, 'sine', 0.15, 1.8);
 
-                // 2. Mobile-Friendly Sequential Sound Wave Generation
-                // Instead of 10 individual independent nodes, we create a scheduled matrix inside a single context timeline
                 const totalBeeps = 10;
-                const beepSpacing = 0.35; // Seconds between beeps
+                const beepSpacing = 0.35; 
 
                 for (let i = 0; i < totalBeeps; i++) {
                     const beepStart = now + 0.4 + (i * beepSpacing);
-                    
                     const osc = audioCtx.createOscillator();
                     const gainNode = audioCtx.createGain();
                     
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(920, beepStart); // Slightly higher pitch to slice through phone speakers
+                    osc.frequency.setValueAtTime(920, beepStart); 
                     
                     gainNode.gain.setValueAtTime(0, beepStart);
                     gainNode.gain.linearRampToValueAtTime(0.5, beepStart + 0.03); 
@@ -714,14 +709,10 @@
                     
                     osc.connect(gainNode);
                     gainNode.connect(audioCtx.destination);
-                    
                     osc.start(beepStart);
                     osc.stop(beepStart + 0.2);
                 }
-
-            } catch (e) {
-                console.warn("Mobile Audio context restriction triggered: ", e);
-            }
+            } catch (e) {}
         }
 
         function updateTimerDisplay() {
@@ -769,6 +760,33 @@
             }
         }
 
+        // --- FIX: CLOCK-DELTA HARDWARE SYNCHRONIZATION RUNTIME TOCK ---
+        function tick() {
+            const expiration = localStorage.getItem('squatmate_expiration');
+            if (!expiration && timerState === 'running') {
+                saveStateToStorage();
+                return;
+            }
+
+            if (timerState === 'running') {
+                const remainingMs = parseInt(expiration, 10) - Date.now();
+                
+                if (remainingMs > 0) {
+                    totalSecondsLeft = Math.ceil(remainingMs / 1000);
+                    updateTimerDisplay();
+                } else {
+                    // Time configuration target reached cleanly inside background thread
+                    clearInterval(timerId); timerId = null;
+                    totalSecondsLeft = 0;
+                    updateTimerDisplay();
+                    setTimerStatusStyle('stopped');
+                    triggerAlarmAudio();
+                    modalOverlay.classList.add('active');
+                    saveStateToStorage();
+                }
+            }
+        }
+
         function loadStateFromStorage() {
             const savedState = localStorage.getItem('squatmate_state');
             const savedInput = localStorage.getItem('squatmate_input_val');
@@ -792,7 +810,7 @@
                 if (expiration) {
                     const remainingMs = parseInt(expiration, 10) - Date.now();
                     if (remainingMs > 0) {
-                        totalSecondsLeft = Math.floor(remainingMs / 1000);
+                        totalSecondsLeft = Math.ceil(remainingMs / 1000);
                         setTimerStatusStyle('running');
                         updateTimerDisplay();
                         timerId = setInterval(tick, 1000);
@@ -819,23 +837,13 @@
             saveStateToStorage();
         }
 
-        function tick() {
-            if (totalSecondsLeft <= 0) {
-                clearInterval(timerId); timerId = null;
-                setTimerStatusStyle('stopped');
-                triggerAlarmAudio();
-                modalOverlay.classList.add('active');
-                saveStateToStorage();
-                return;
-            }
-            totalSecondsLeft--;
-            updateTimerDisplay();
-        }
-
         startPauseBtn.addEventListener('click', () => {
             if (timerState === 'stopped' || timerState === 'paused') {
                 if (timerState === 'stopped') syncDurationFromInput();
                 setTimerStatusStyle('running');
+                // Set explicitly before setting interval to assure baseline accuracy maps
+                const expirationTimestamp = Date.now() + (totalSecondsLeft * 1000);
+                localStorage.setItem('squatmate_expiration', expirationTimestamp);
                 timerId = setInterval(tick, 1000);
             } else {
                 clearInterval(timerId); timerId = null;
